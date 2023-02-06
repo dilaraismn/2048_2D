@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,6 +11,7 @@ public class Tile : MonoBehaviour
    public TileState state { get; private set; }
    public Cell cell { get; private set; }
    public int number { get; private set; }
+   public bool isLocked { get; set; }
    private Image background;
    private TextMeshProUGUI text;
 
@@ -52,10 +54,10 @@ public class Tile : MonoBehaviour
       this.cell = cell;
       this.cell.tile = this;
 
-      StartCoroutine(Animate(cell.transform.position));
+      StartCoroutine(Animate(cell.transform.position, false));
    }
-
-   private IEnumerator Animate(Vector3 to)
+   
+   private IEnumerator Animate(Vector3 to, bool isMerging)
    {
       float elapsed = 0f;
       float duration = 0.1f;
@@ -69,5 +71,23 @@ public class Tile : MonoBehaviour
          yield return null;
       }
       transform.position = to;
+
+      if (isMerging)
+      {
+         Destroy(gameObject);
+      }
+   }
+
+   public void Merge(Cell cell)
+   {
+      if (this.cell != null)
+      {
+         this.cell.tile = null;
+      }
+
+      this.cell = null;
+      cell.tile.isLocked = true;
+      StartCoroutine(Animate(cell.transform.position, true));
+
    }
 }
