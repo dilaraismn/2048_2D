@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private TileState[] tileStates;
     private List<Tile> tiles;
@@ -15,12 +16,6 @@ public class Board : MonoBehaviour
     {
         grid = GetComponentInChildren<Grid>();
         tiles = new List<Tile>(16); //capacity specification for optimization
-    }
-
-    private void Start()
-    {
-        CreateTile();
-        CreateTile();
     }
 
     private void Update()
@@ -46,7 +41,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void CreateTile()
+    public void CreateTile()
     {
         Tile tile = Instantiate(tilePrefab, grid.transform); //grid as parent
         tile.SetState(tileStates[0], 2);
@@ -55,6 +50,20 @@ public class Board : MonoBehaviour
         tiles.Add(tile);
     }
 
+    public void ClearBoard()
+    {
+        foreach (var cell in grid.cells)
+        {
+            cell.tile = null;
+        }
+        foreach (var tile in tiles)
+        {
+            Destroy(tile.gameObject);
+        }
+        
+        tiles.Clear();
+    }
+    
     private void MoveTileCheck(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
     {
         bool changed = false;
@@ -153,6 +162,45 @@ public class Board : MonoBehaviour
         {
             CreateTile();
         }
-        //check for game over
+
+        if (CheckForGameOver())
+        {
+            gameManager.GameOver();
+        }
+    }
+
+    private bool CheckForGameOver()
+    {
+        if (tiles.Count != grid.size)
+        {
+            return false;
+        }
+
+        foreach (var tile in tiles)
+        {
+            Cell up = grid.GetAdjacentCell(tile.cell, Vector2Int.up);
+            Cell down = grid.GetAdjacentCell(tile.cell, Vector2Int.down);
+            Cell right = grid.GetAdjacentCell(tile.cell, Vector2Int.right);
+            Cell left = grid.GetAdjacentCell(tile.cell, Vector2Int.left);
+
+            if (up != null && CanMerge(tile,up.tile))
+            {
+                return false;
+            }
+            if (down != null && CanMerge(tile,down.tile))
+            {
+                return false;
+            }
+            if (right != null && CanMerge(tile,right.tile))
+            {
+                return false;
+            }
+            if (left != null && CanMerge(tile,left.tile))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
