@@ -6,9 +6,9 @@ using Random = UnityEngine.Random;
 
 public class Grid : MonoBehaviour
 {
-   [SerializeField] private int size => cells.Length;
-   [SerializeField] private int height => rows.Length;
-   [SerializeField] private int width => size / height;
+   public int size => cells.Length;
+   public int height => rows.Length;
+   public int width => size / height;
    public Row[] rows { get; private set; }
    public Cell[] cells { get; private set; }
 
@@ -50,4 +50,30 @@ public class Grid : MonoBehaviour
       }
       return cells[index];
    }
+
+   public Cell GetCell(int x, int y)
+   {
+      if (x >= 0 && x < width && y >= 0 && y < height)
+      {
+         return rows[y].cells[x];
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   public Cell GetCell(Vector2Int coordinates)
+   {
+      return GetCell(coordinates.x, coordinates.y);
+   }
+   public Cell GetAdjacentCell(Cell cell, Vector2Int direction)
+   {
+      Vector2Int coordinates = cell.coordinates;
+      coordinates.x += direction.x;
+      coordinates.y -= direction.y;
+
+      return GetCell(coordinates);
+   }
+   
 }

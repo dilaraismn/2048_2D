@@ -22,6 +22,26 @@ public class Board : MonoBehaviour
         CreateTile();
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            MoveTileCheck(Vector2Int.up, 0,1, 1, 1);
+        }
+        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            MoveTileCheck(Vector2Int.down, 0, 1, grid.height - 2, -1);
+        }
+        else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            MoveTileCheck(Vector2Int.left, 1,1,0, 1);
+        }
+        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            MoveTileCheck(Vector2Int.right, grid.width - 2, -1, 0,1);
+        }
+    }
+
     private void CreateTile()
     {
         Tile tile = Instantiate(tilePrefab, grid.transform); //grid as parent
@@ -29,5 +49,42 @@ public class Board : MonoBehaviour
         
         tile.Spawn(grid.GetRandomEmptyCell());
         tiles.Add(tile);
+    }
+
+    private void MoveTileCheck(Vector2Int direction, int startX, int incrementX, int startY, int incrementY)
+    {
+        for (int x = startX; x >= 0 && x < grid.width; x += incrementX)
+        {
+            for (int y = startY; y >= 0 && y < grid.height; y += incrementY)
+            {
+                Cell cell = grid.GetCell(x, y);
+                if (cell.occupied)
+                {
+                    MoveTile(cell.tile, direction);
+                }
+            }
+        }
+    }
+
+    private void MoveTile(Tile tile, Vector2Int direction)
+    {
+        Cell newCell = null;
+        Cell adjacent = grid.GetAdjacentCell(tile.cell, direction);
+
+        while (adjacent != null)
+        {
+            if (adjacent.occupied)
+            {
+                break;
+            }
+
+            newCell = adjacent;
+            adjacent = grid.GetAdjacentCell(adjacent, direction);
+        }
+
+        if (newCell != null)
+        {
+            tile.MoveToCell(newCell);
+        }
     }
 }
